@@ -4,6 +4,7 @@ import { requireAuth } from "../middleware/auth.middleware.js";
 import { parse } from "../middleware/validation.middleware.js";
 import { OrgQuery } from "../schemas/common.schemas.js";
 import { requireOrgRole } from "../services/authorization.service.js";
+import { logger } from "../utils/logger.js";
 import { ok } from "./respond.js";
 
 /** Liveness/readiness (unauthenticated, no secrets) plus the authenticated engineering-health summary. */
@@ -12,7 +13,8 @@ export function healthRoutes(ctx: AppContext) {
   r.get("/health", (_req, res) => res.json({ status: "ok" }));
   r.get("/ready", async (_req, res) => {
     const checks: Record<string, "ok" | "unavailable" | "not_configured" | "degraded"> = {};
-    try { await ctx.store.organizations.get("__readiness_probe__"); checks.storage = "ok"; } catch { checks.storage = "unavailable"; }
+    try { await ctx.store.organizations.get("readiness-probe"); checks.storage = "ok"; }
+    catch (e) { logger.warn({ err: (e as Error)?.message }, "readiness: storage check failed"); checks.storage = "unavailable"; }
     checks.github = ctx.github.source === "fixture" ? "degraded" : "ok";
     checks.gemini = ctx.gemini ? "ok" : "not_configured";
     const ready = checks.storage === "ok";

@@ -70,3 +70,13 @@ describe("Phase 1: foundation", () => {
     expect(second.headers["retry-after"]).toBeDefined();
   });
 });
+
+describe("Firestore document ID rules", () => {
+  it("never uses reserved __name__ document IDs", async () => {
+    const { readFileSync, readdirSync, statSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const walk = (d: string): string[] => readdirSync(d).flatMap((f) => statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : [join(d, f)]);
+    for (const f of walk("src").filter((x) => x.endsWith(".ts")))
+      expect(readFileSync(f, "utf8"), f).not.toMatch(/\.(get|doc)\(\s*["'`]__\w+__["'`]/);
+  });
+});
