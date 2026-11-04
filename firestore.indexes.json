@@ -1,0 +1,11 @@
+{
+  "indexes": [
+    { "collectionGroup": "investigations", "queryScope": "COLLECTION",
+      "fields": [{ "fieldPath": "organizationId", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" }] },
+    { "collectionGroup": "investigations", "queryScope": "COLLECTION",
+      "fields": [{ "fieldPath": "organizationId", "order": "ASCENDING" }, { "fieldPath": "requestedBy", "order": "ASCENDING" }, { "fieldPath": "idempotencyKey", "order": "ASCENDING" }] },
+    { "collectionGroup": "engineeringSnapshots", "queryScope": "COLLECTION",
+      "fields": [{ "fieldPath": "organizationId", "order": "ASCENDING" }, { "fieldPath": "capturedAt", "order": "DESCENDING" }] }
+  ],
+  "fieldOverrides": []
+}
