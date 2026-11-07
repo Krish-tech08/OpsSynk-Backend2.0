@@ -47,7 +47,7 @@ describe("Phase 3 MVP: Manager → GitHub Agent → Project Agent", () => {
     }
     const stale = report.findings.find((f: any) => f.id === "github:stale-prs:mobile-app-ios");
     expect(stale.evidence.map((e: any) => e.sourceId)).toEqual(["pr:mobile-app-ios#17", "pr:mobile-app-ios#18"]);
-    expect(stale.evidence[0].sourceUrl).toBe("https://fixtures.opssynk.invalid/opssynk-demo/mobile-app-ios/pull/17");
+    expect(stale.evidence[0].sourceUrl).toBe("https://fixtures.opssynk.invalid/SynkStack/mobile-app-ios/pull/17");
     const critical = report.findings.find((f: any) => f.id === "project:health:demo_payments_sdk");
     expect(critical).toMatchObject({ kind: "inference", severity: "critical", category: "project-health" });
     expect(critical.evidence.map((e: any) => e.sourceId)).toContain("project-health:demo_payments_sdk");

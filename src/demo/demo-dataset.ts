@@ -19,7 +19,10 @@ export interface DemoProject {
 }
 
 export const DEMO_ORG_ID = "org_demo";
-export const DEMO_GITHUB_ORG = "opssynk-demo";
+/** The real organization this deployment serves, and its owner's Firebase Auth UID. */
+export const DEMO_ORG_NAME = "SynkStack";
+export const DEMO_OWNER_UID = "YV0ZBCkMsaYFCn4OpH5oJ3gEVIu1";
+export const DEMO_GITHUB_ORG = "SynkStack";
 
 export const DEMO_PROJECTS: DemoProject[] = [
   { id: "demo_android_app", name: "Android App", team: "Mobile", repository: "mobile-app-android", profile: "healthy", description: "Customer Android application.", hasDeployments: true },

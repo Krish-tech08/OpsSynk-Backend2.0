@@ -18,7 +18,7 @@ describe("issue / pull request separation", () => {
   });
   it("is applied by the service on the fixture feed (which mixes PRs into issues like GitHub does)", async () => {
     const svc = new GitHubService(createFixtureTransport(clock), { allowlist: [], activityWindowDays: 14, ciWindowDays: 14, now: clock, htmlBaseUrl: FIXTURE_HTML_BASE });
-    const r = await svc.listOpenIssues("opssynk-demo", "mobile-app-ios");
+    const r = await svc.listOpenIssues("SynkStack", "mobile-app-ios");
     expect(r.value.map((i) => i.number)).toEqual([201, 202, 203]);
     expect(r.pullRequestsExcluded).toBe(3);
   });
@@ -67,8 +67,8 @@ describe("GitHub client", () => {
 describe("deployment evidence", () => {
   it("comes only from the Deployments API; repositories without deployments return an empty list", async () => {
     const svc = new GitHubService(createFixtureTransport(clock), { allowlist: [], activityWindowDays: 14, ciWindowDays: 14, now: clock, htmlBaseUrl: FIXTURE_HTML_BASE });
-    expect((await svc.listDeployments("opssynk-demo", "mobile-app-ios")).value).toEqual([]);
-    const d = (await svc.listDeployments("opssynk-demo", "mobile-payments-sdk")).value;
+    expect((await svc.listDeployments("SynkStack", "mobile-app-ios")).value).toEqual([]);
+    const d = (await svc.listDeployments("SynkStack", "mobile-payments-sdk")).value;
     expect(d[0]).toMatchObject({ environment: "production", latestStatus: { state: "failure" } });
   });
 });

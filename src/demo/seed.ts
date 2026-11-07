@@ -1,6 +1,6 @@
 import type { Store } from "../repositories/store.js";
 import type { Incident, Organization, Project, Task } from "../types/domain.js";
-import { DEMO_INCIDENTS, DEMO_ORG_ID, DEMO_PROJECTS, DEMO_TASKS } from "./demo-dataset.js";
+import { DEMO_INCIDENTS, DEMO_ORG_ID, DEMO_ORG_NAME, DEMO_PROJECTS, DEMO_TASKS } from "./demo-dataset.js";
 import { DAY_MS } from "../utils/time.js";
 
 export interface SeedOptions {
@@ -26,7 +26,7 @@ export async function seedDemo(store: Store, o: SeedOptions): Promise<SeedReport
     report.written++;
   }
 
-  const org: Organization = { id: DEMO_ORG_ID, name: "OpsSynk Demo Company", githubOrganization: o.githubOrganization, ownerUid: o.ownerUid, createdAt: ts, isDemoData: true };
+  const org: Organization = { id: DEMO_ORG_ID, name: DEMO_ORG_NAME, githubOrganization: o.githubOrganization, ownerUid: o.ownerUid, createdAt: ts, isDemoData: true };
   await put("organization", await store.organizations.get(org.id), () => store.organizations.upsert(org), org.id);
 
   const members = [{ uid: o.ownerUid, role: "owner" as const }, ...(o.viewerUid ? [{ uid: o.viewerUid, role: "viewer" as const }] : [])];

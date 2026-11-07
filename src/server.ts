@@ -10,7 +10,7 @@ import { createGitHubClient } from "./integrations/github/github.client.js";
 import { createFixtureTransport } from "./integrations/github/fixture.transport.js";
 import { createGeminiClient, createGoogleGenAiTransport } from "./integrations/gemini/gemini.client.js";
 import { seedDemo } from "./demo/seed.js";
-import { DEMO_GITHUB_ORG } from "./demo/demo-dataset.js";
+import { DEMO_GITHUB_ORG, DEMO_ORG_ID, DEMO_OWNER_UID } from "./demo/demo-dataset.js";
 import { logger } from "./utils/logger.js";
 
 async function main() {
@@ -39,6 +39,14 @@ async function main() {
     const ownerUid = process.env.DEMO_OWNER_UID ?? "demo-owner";
     const r = await seedDemo(store, { ownerUid, viewerUid: process.env.DEMO_VIEWER_UID ?? "demo-viewer", githubOrganization: env.GITHUB_ORG ?? DEMO_GITHUB_ORG, now: new Date() });
     logger.info({ written: r.written, ownerUid }, "In-memory demo data seeded");
+  } else if (env.DEMO_MODE && env.STORAGE_MODE === "firestore") {
+    // Seed the organization once; later restarts leave existing Firestore data untouched.
+    if (await store.organizations.get(DEMO_ORG_ID)) logger.info({ organizationId: DEMO_ORG_ID }, "Organization already in Firestore; skipping seed");
+    else {
+      const ownerUid = process.env.DEMO_OWNER_UID ?? DEMO_OWNER_UID;
+      const r = await seedDemo(store, { ownerUid, githubOrganization: env.GITHUB_ORG ?? DEMO_GITHUB_ORG, now: new Date() });
+      logger.info({ written: r.written, ownerUid, skipped: r.skippedNonDemo.length }, "Organization seeded into Firestore");
+    }
   }
 
   const recovered = await ctx.investigations.recoverInterrupted();

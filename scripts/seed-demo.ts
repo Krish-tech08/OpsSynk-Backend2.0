@@ -9,11 +9,11 @@
 import { initFirebase, firestore } from "../src/integrations/firebase/admin.js";
 import { createFirestoreStore } from "../src/repositories/firestore.store.js";
 import { seedDemo } from "../src/demo/seed.js";
-import { DEMO_GITHUB_ORG, DEMO_PROJECTS } from "../src/demo/demo-dataset.js";
+import { DEMO_GITHUB_ORG, DEMO_OWNER_UID, DEMO_PROJECTS } from "../src/demo/demo-dataset.js";
 import { createGitHubClient } from "../src/integrations/github/github.client.js";
 
 const projectId = process.env.FIREBASE_PROJECT_ID;
-const ownerUid = process.env.SEED_OWNER_UID;
+const ownerUid = process.env.SEED_OWNER_UID ?? DEMO_OWNER_UID;
 if (!projectId || !ownerUid) {
   console.error("FIREBASE_PROJECT_ID and SEED_OWNER_UID are required.");
   process.exit(1);
