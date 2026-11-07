@@ -1,3 +1,5 @@
+import type { IncidentSeverity, IncidentStatus } from "../types/domain.js";
+
 /**
  * OpsSynk demonstration dataset (explicitly synthetic). Used by:
  *  - scripts/seed-demo.ts   → Firestore projects/tasks/incidents (all flagged isDemoData: true)
@@ -55,9 +57,37 @@ export const DEMO_TASKS: Record<DemoProfile, Array<[string, "todo" | "in_progres
   ],
 };
 
-export const DEMO_INCIDENTS = [
+export interface DemoIncident {
+  id: string;
+  projectId: string;
+  title: string;
+  description: string;
+  severity: IncidentSeverity;
+  status: IncidentStatus;
+}
+
+export const DEMO_INCIDENTS: DemoIncident[] = [
   { id: "demo_incident_payments", projectId: "demo_payments_sdk", title: "Checkout failures after SDK update",
-    description: "Customers report failed card payments after the latest Payments SDK build.", severity: "sev1" as const, status: "investigating" as const },
+    description: "Customers report failed card payments after the latest Payments SDK build.", severity: "sev1", status: "investigating" },
   { id: "demo_incident_auth", projectId: "demo_auth_service", title: "Intermittent login timeouts",
-    description: "Login requests occasionally time out during peak hours.", severity: "sev3" as const, status: "open" as const },
+    description: "Login requests occasionally time out during peak hours.", severity: "sev3", status: "open" },
+];
+
+/**
+ * SynkStack's real repositories. The Firestore deployment (DEMO_MODE=true) seeds these instead of the
+ * 12 synthetic projects above; tasks and incidents for them are still sample data (isDemoData: true).
+ * `repository` must match the GitHub repository name exactly.
+ */
+export const ORG_PROJECTS: DemoProject[] = [
+  { id: "synk_authcore", name: "AuthCore", team: "Platform", repository: "AuthCore", profile: "warning", description: "Authentication service.", hasDeployments: false },
+  { id: "synk_notificationhub", name: "NotificationHub", team: "Platform", repository: "NotificationHub", profile: "critical", description: "Notification delivery service.", hasDeployments: false },
+  { id: "synk_fieldtrack", name: "FieldTrack", team: "Mobile", repository: "mobile-fieldtrack", profile: "healthy", description: "Android field tracking application for location-aware workflows and data collection.", hasDeployments: false },
+  { id: "synk_grindquest", name: "GrindQuest", team: "Mobile", repository: "mobile-grindquest", profile: "healthy", description: "Android quest and productivity application built with Kotlin and Jetpack Compose.", hasDeployments: false },
+];
+
+export const ORG_INCIDENTS: DemoIncident[] = [
+  { id: "synk_incident_notifications", projectId: "synk_notificationhub", title: "Push notifications delayed",
+    description: "Users report push notifications arriving several minutes late.", severity: "sev2", status: "investigating" },
+  { id: "synk_incident_auth", projectId: "synk_authcore", title: "Intermittent login timeouts",
+    description: "Login requests occasionally time out during peak hours.", severity: "sev3", status: "open" },
 ];

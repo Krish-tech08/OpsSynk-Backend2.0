@@ -9,8 +9,8 @@ import { firebaseAuth, firestore, initFirebase } from "./integrations/firebase/a
 import { createGitHubClient } from "./integrations/github/github.client.js";
 import { createFixtureTransport } from "./integrations/github/fixture.transport.js";
 import { createGeminiClient, createGoogleGenAiTransport } from "./integrations/gemini/gemini.client.js";
-import { seedDemo } from "./demo/seed.js";
-import { DEMO_GITHUB_ORG, DEMO_ORG_ID, DEMO_OWNER_UID } from "./demo/demo-dataset.js";
+import { seedDemo, syncOrganization } from "./demo/seed.js";
+import { DEMO_GITHUB_ORG, DEMO_ORG_ID, DEMO_OWNER_UID, ORG_INCIDENTS, ORG_PROJECTS } from "./demo/demo-dataset.js";
 import { logger } from "./utils/logger.js";
 
 async function main() {
@@ -40,13 +40,12 @@ async function main() {
     const r = await seedDemo(store, { ownerUid, viewerUid: process.env.DEMO_VIEWER_UID ?? "demo-viewer", githubOrganization: env.GITHUB_ORG ?? DEMO_GITHUB_ORG, now: new Date() });
     logger.info({ written: r.written, ownerUid }, "In-memory demo data seeded");
   } else if (env.DEMO_MODE && env.STORAGE_MODE === "firestore") {
-    // Seed the organization once; later restarts leave existing Firestore data untouched.
-    if (await store.organizations.get(DEMO_ORG_ID)) logger.info({ organizationId: DEMO_ORG_ID }, "Organization already in Firestore; skipping seed");
-    else {
-      const ownerUid = process.env.DEMO_OWNER_UID ?? DEMO_OWNER_UID;
-      const r = await seedDemo(store, { ownerUid, githubOrganization: env.GITHUB_ORG ?? DEMO_GITHUB_ORG, now: new Date() });
-      logger.info({ written: r.written, ownerUid, skipped: r.skippedNonDemo.length }, "Organization seeded into Firestore");
-    }
+    // Keep the organization's projects in line with ORG_PROJECTS; once in sync, restarts change nothing.
+    const ownerUid = process.env.DEMO_OWNER_UID ?? DEMO_OWNER_UID;
+    const r = await syncOrganization(store, { ownerUid, githubOrganization: env.GITHUB_ORG ?? DEMO_GITHUB_ORG, now: new Date(),
+      projects: ORG_PROJECTS, incidents: ORG_INCIDENTS });
+    if (r.seeded) logger.info({ ownerUid, removed: r.removed, written: r.seeded.written, skipped: r.seeded.skippedNonDemo.length }, "Organization synced to its repositories");
+    else logger.info({ organizationId: DEMO_ORG_ID }, "Organization already in sync; nothing to seed");
   }
 
   const recovered = await ctx.investigations.recoverInterrupted();

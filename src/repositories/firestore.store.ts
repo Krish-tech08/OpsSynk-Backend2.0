@@ -30,16 +30,19 @@ export function createFirestoreStore(db: Firestore): Store {
       list: (orgId) => byOrg("projects", orgId),
       get: async (id) => data(await db.collection("projects").doc(id).get()),
       upsert: async (p) => void (await db.collection("projects").doc(p.id).set(p)),
+      remove: async (id) => void (await db.collection("projects").doc(id).delete()),
     },
     tasks: {
       listByProject: async (pid) => (await db.collection("tasks").where("projectId", "==", pid).get()).docs.map((d) => d.data() as any),
       get: async (id) => data(await db.collection("tasks").doc(id).get()),
       upsert: async (t) => void (await db.collection("tasks").doc(t.id).set(t)),
+      remove: async (id) => void (await db.collection("tasks").doc(id).delete()),
     },
     incidents: {
       list: (orgId) => byOrg("incidents", orgId),
       get: async (id) => data(await db.collection("incidents").doc(id).get()),
       upsert: async (i) => void (await db.collection("incidents").doc(i.id).set(i)),
+      remove: async (id) => void (await db.collection("incidents").doc(id).delete()),
     },
     investigations: {
       create: async (inv) => void (await db.collection("investigations").doc(inv.id).create(inv)),

@@ -28,16 +28,19 @@ export function createMemoryStore(): Store {
       list: async (orgId) => [...projects.values()].filter((p) => p.organizationId === orgId).map(clone),
       get: async (id) => clone(projects.get(id) ?? null),
       upsert: async (p) => void projects.set(p.id, clone(p)),
+      remove: async (id) => void projects.delete(id),
     },
     tasks: {
       listByProject: async (pid) => [...tasks.values()].filter((t) => t.projectId === pid).map(clone),
       get: async (id) => clone(tasks.get(id) ?? null),
       upsert: async (t) => void tasks.set(t.id, clone(t)),
+      remove: async (id) => void tasks.delete(id),
     },
     incidents: {
       list: async (orgId) => [...incidents.values()].filter((i) => i.organizationId === orgId).map(clone),
       get: async (id) => clone(incidents.get(id) ?? null),
       upsert: async (i) => void incidents.set(i.id, clone(i)),
+      remove: async (id) => void incidents.delete(id),
     },
     investigations: {
       create: async (inv) => {

@@ -1,6 +1,6 @@
 import type { Store } from "../repositories/store.js";
 import type { Incident, Organization, Project, Task } from "../types/domain.js";
-import { DEMO_INCIDENTS, DEMO_ORG_ID, DEMO_ORG_NAME, DEMO_PROJECTS, DEMO_TASKS } from "./demo-dataset.js";
+import { DEMO_INCIDENTS, DEMO_ORG_ID, DEMO_ORG_NAME, DEMO_PROJECTS, DEMO_TASKS, type DemoIncident, type DemoProject } from "./demo-dataset.js";
 import { DAY_MS } from "../utils/time.js";
 
 export interface SeedOptions {
@@ -8,6 +8,9 @@ export interface SeedOptions {
   githubOrganization: string;
   now: Date;
   viewerUid?: string;
+  /** Projects and incidents to seed; default to the 12-project synthetic dataset. */
+  projects?: DemoProject[];
+  incidents?: DemoIncident[];
 }
 export interface SeedReport { written: number; skippedNonDemo: string[] }
 
@@ -35,7 +38,7 @@ export async function seedDemo(store: Store, o: SeedOptions): Promise<SeedReport
       () => store.members.upsert({ uid: m.uid, organizationId: DEMO_ORG_ID, role: m.role, createdAt: ts, isDemoData: true }), m.uid);
 
   const dueBy = { healthy: 30, warning: 10, critical: -2 } as const;
-  for (const p of DEMO_PROJECTS) {
+  for (const p of o.projects ?? DEMO_PROJECTS) {
     const project: Project = {
       id: p.id, organizationId: DEMO_ORG_ID, name: p.name, description: p.description, teamId: p.team.toLowerCase(),
       repositoryIds: [p.repository], ownerUid: p.profile === "critical" && p.id === "demo_chat_bot" ? null : o.ownerUid,
@@ -54,9 +57,32 @@ export async function seedDemo(store: Store, o: SeedOptions): Promise<SeedReport
     }
   }
 
-  for (const d of DEMO_INCIDENTS) {
+  for (const d of o.incidents ?? DEMO_INCIDENTS) {
     const incident: Incident = { ...d, organizationId: DEMO_ORG_ID, createdAt: at(-1), updatedAt: ts, relatedEvidenceIds: [], investigationIds: [], isDemoData: true };
     await put("incident", await store.incidents.get(incident.id), () => store.incidents.upsert(incident), incident.id);
   }
   return report;
+}
+
+/**
+ * Brings the organization in line with `o.projects`: removes demo projects that are no longer listed (with their
+ * demo tasks and incidents), then seeds the listed ones. Returns seeded: null when already in sync, so restarts
+ * leave existing data untouched. Records without isDemoData are never removed or overwritten.
+ */
+export async function syncOrganization(store: Store, o: SeedOptions & { projects: DemoProject[] }): Promise<{ removed: number; seeded: SeedReport | null }> {
+  const wanted = new Set(o.projects.map((p) => p.id));
+  const existing = await store.projects.list(DEMO_ORG_ID);
+  const stale = existing.filter((p) => p.isDemoData && !wanted.has(p.id));
+  const complete = o.projects.every((p) => existing.some((e) => e.id === p.id));
+  if (stale.length === 0 && complete && (await store.organizations.get(DEMO_ORG_ID))) return { removed: 0, seeded: null };
+
+  let removed = 0;
+  for (const p of stale) {
+    for (const t of await store.tasks.listByProject(p.id)) if (t.isDemoData) { await store.tasks.remove(t.id); removed++; }
+    await store.projects.remove(p.id);
+    removed++;
+  }
+  for (const i of await store.incidents.list(DEMO_ORG_ID))
+    if (i.isDemoData && i.projectId && !wanted.has(i.projectId)) { await store.incidents.remove(i.id); removed++; }
+  return { removed, seeded: await seedDemo(store, o) };
 }

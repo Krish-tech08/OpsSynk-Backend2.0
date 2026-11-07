@@ -18,16 +18,19 @@ export interface Store {
     list(organizationId: string): Promise<Project[]>;
     get(id: string): Promise<Project | null>;
     upsert(p: Project): Promise<void>;
+    remove(id: string): Promise<void>;
   };
   tasks: {
     listByProject(projectId: string): Promise<Task[]>;
     get(id: string): Promise<Task | null>;
     upsert(t: Task): Promise<void>;
+    remove(id: string): Promise<void>;
   };
   incidents: {
     list(organizationId: string): Promise<Incident[]>;
     get(id: string): Promise<Incident | null>;
     upsert(i: Incident): Promise<void>;
+    remove(id: string): Promise<void>;
   };
   investigations: {
     create(inv: Investigation): Promise<void>;
