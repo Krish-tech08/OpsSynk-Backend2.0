@@ -12,6 +12,7 @@ import { agentRoutes } from "./routes/agents.routes.js";
 import { incidentRoutes } from "./routes/incidents.routes.js";
 import { reportRoutes } from "./routes/reports.routes.js";
 import { openApiDocument } from "./openapi.js";
+import { metaRoutes } from "./routes/meta.routes.js"
 
 export function createApp(ctx: AppContext) {
   const app = express();
@@ -34,6 +35,7 @@ export function createApp(ctx: AppContext) {
   api.use("/incidents", incidentRoutes(ctx));
   api.use("/reports", reportRoutes(ctx));
   app.use("/api/v1", api);
+  app.use(metaRoutes(ctx));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
