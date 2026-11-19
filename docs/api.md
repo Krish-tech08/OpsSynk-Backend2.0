@@ -37,6 +37,8 @@ All `/api/v1` routes require `Authorization: Bearer <Firebase ID token>`. Respon
 | `POST /api/v1/incidents/:id/investigate` | member | Scoped to the incident's project; the incident is cited as evidence |
 | `GET /api/v1/analytics/company`, `/analytics/projects` | viewer | Includes weights, bands, coverage |
 | `GET /api/v1/reports/:investigationId` | viewer | 409 `REPORT_NOT_READY` until finished |
+| `GET /version` | public | Version, Node version, start time and uptime (no secrets) |
+| `GET /api/v1/organizations/:organizationId/me` | viewer | The caller's own role in the organization |
 
 Every GitHub response carries `meta.dataSource` (`github` or `fixture`) and `meta.isDemoData`.
 
